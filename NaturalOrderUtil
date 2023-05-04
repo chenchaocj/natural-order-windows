@@ -1,0 +1,55 @@
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.regex.MatchResult;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+public class NaturalOrderUtil {
+
+    public static void main(String[] args) {
+        String[] strings = new String[]{"1-2", "1-02", "1-20", "10-20", "fred", "jane", "pic01",
+                "pic2", "pic02", "pic02a", "pic3", "pic4", "pic 4 else", "pic 5", "pic05",
+                "pic 5 something", "pic 6", "pic   7", "pic100", "pic100a", "pic120", "pic121",
+                "pic02000", "tom", "x2-g8", "x2-y7", "x2-y08", "x8-y8", "1-2.2a", "1-2.08a", "1-03.3b","1-0","p0p","p00p","p1p","啊","的","是"};
+        MyNaturalOrderComparator myNaturalOrderComparator = new MyNaturalOrderComparator();
+        Map<String, String> map = new HashMap<>();
+        for (String s : strings) {
+            String newStr = myNaturalOrderComparator.convert(s);
+            map.put(newStr, s);
+        }
+        Set<String> keySet = map.keySet();
+        ArrayList<String> keyList = new ArrayList<>(keySet);
+        Collections.sort(keyList);
+        List<String> sortedList = new ArrayList<>();
+        for (String key : keyList) {
+            sortedList.add(map.get(key));
+        }
+        System.out.println("key sorted: " + keyList);
+        System.out.println("sorted: " + sortedList);
+    }
+
+
+    public String convert(String originStr) {
+        String regex = "[0-9]+";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(originStr);
+        return matcher.replaceAll(this::replace);
+    }
+
+    private String replace(MatchResult matchResult) {
+        String matchedStr = matchResult.group();
+        int numOfZero = 0;
+        for (byte b : matchedStr.getBytes(StandardCharsets.UTF_8)) {
+            if (b == 48) {
+                numOfZero += 1;
+            } else {
+                break;
+            }
+        }
+        String numOfZeroStr = String.format("%03d", 999 - numOfZero);
+        String lengthOfStrWithoutZero = String.format("%03d", matchedStr.length() - numOfZero);
+        return lengthOfStrWithoutZero + matchedStr.substring(numOfZero) + numOfZeroStr;
+    }
+
+
+}
